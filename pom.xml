@@ -13,6 +13,11 @@
     <description>Modular Maven framework for test automation in Playwright with Java</description>
     <url>https://github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
 
+    <!-- MODULES -->
+    <modules>
+        <module>test-parent</module>
+    </modules>
+
     <!-- PROPERTIES -->
     <properties>
         <java.version>21</java.version>
@@ -88,12 +93,34 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.3.1</version>
+                    <version>${maven.dependency.checkstyle.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>10.15.0</version>
+                        </dependency>
+                    </dependencies>
                     <configuration>
-                        <configLocation>checkstyle.xml</configLocation>
+                        <configLocation>etc/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
-                        <failsOnError>false</failsOnError>
+                        <failOnViolation>true</failOnViolation>
+                        <failsOnError>true</failsOnError>
+                        <violationSeverity>warning</violationSeverity>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <includeResources>true</includeResources>
+                        <includeTestResources>true</includeTestResources>
                     </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                                <goal>checkstyle-aggregate</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
 
             </plugins>
