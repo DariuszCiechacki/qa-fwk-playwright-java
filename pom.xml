@@ -7,7 +7,7 @@
     <!-- PROJECT -->
     <groupId>io.github.dariuszciechacki</groupId>
     <artifactId>qa-fwk-playwright-java</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <name>QA Framework - Playwright Java</name>
     <description>Modular Maven framework for test automation in Playwright with Java</description>
@@ -16,6 +16,7 @@
     <!-- MODULES -->
     <modules>
         <module>test-parent</module>
+        <module>core</module>
     </modules>
 
     <!-- PROPERTIES -->
@@ -25,11 +26,15 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <revision>1.0-SNAPSHOT</revision>
 
         <!-- Dependency Versions -->
         <playwright.version>1.55.0</playwright.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <allure.version>2.27.0</allure.version>
+        <lombok.version>1.18.32</lombok.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <maven.dependency.checkstyle.version>3.3.1</maven.dependency.checkstyle.version>
     </properties>
 
     <!-- DEPENDENCY MANAGEMENT -->
@@ -60,6 +65,18 @@
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-junit5</artifactId>
             <version>${allure.version}</version>
+        </dependency>
+
+        <!-- Utils dependencies-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
     </dependencyManagement>
