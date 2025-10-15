@@ -1,4 +1,4 @@
-package io.github.qa.config.exception;
+package io.github.qa.exception;
 
 /**
  * Thrown when the playwright configuration cannot be loaded or parsed.
