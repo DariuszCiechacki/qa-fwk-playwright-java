@@ -2,6 +2,7 @@ package io.github.qa.playwright;
 
 import com.microsoft.playwright.Playwright;
 import io.github.qa.exception.PlaywrightInitializationException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Manages lifecycle of a single {@link com.microsoft.playwright.Playwright} instance.
@@ -10,6 +11,7 @@ import io.github.qa.exception.PlaywrightInitializationException;
  * Intended to be used by factories such as {@code BrowserFactory}, {@code ContextFactory} and {@code PageFactory}.
  * </p>
  */
+@Slf4j
 public final class PlaywrightManager {
     /** Singleton Playwright instance. */
     private static Playwright playwrightInstance;
@@ -33,5 +35,21 @@ public final class PlaywrightManager {
             }
         }
         return playwrightInstance;
+    }
+
+    /**
+     * Closes the current Playwright instance safely, if active.
+     */
+    public static synchronized void close() {
+        if (playwrightInstance != null) {
+            try {
+                playwrightInstance.close();
+                log.info("Playwright instance closed successfully.");
+            } catch (Exception e) {
+                log.warn("Failed to close Playwright cleanly: {}", e.getMessage(), e);
+            } finally {
+                playwrightInstance = null;
+            }
+        }
     }
 }
