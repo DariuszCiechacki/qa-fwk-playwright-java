@@ -32,6 +32,11 @@ public final class PlaywrightSessionManager {
         return session;
     }
 
+    /** Returns the current thread's PlaywrightSessionManager instance. */
+    public static PlaywrightSessionManager current() {
+        return THREAD_SESSION.get();
+    }
+
     /**
      * Initializes a full Playwright session stack (Browser → Context → Page).
      */
@@ -45,7 +50,7 @@ public final class PlaywrightSessionManager {
      * Returns the current Browser.
      */
     public Browser getBrowser() {
-        ensureInitialized(browser, "Browser not initialized. Call startSession() first.");
+        ensureInitialized(browser, "Browser not initialized. Call startPlaywrightSession() first.");
         return browser;
     }
 
@@ -53,7 +58,7 @@ public final class PlaywrightSessionManager {
      * Returns the current BrowserContext.
      */
     public BrowserContext getContext() {
-        ensureInitialized(context, "Context not initialized. Call startSession() first.");
+        ensureInitialized(context, "Context not initialized. Call startPlaywrightSession() first.");
         return context;
     }
 
@@ -61,12 +66,13 @@ public final class PlaywrightSessionManager {
      * Returns the current Playwright Page.
      */
     public Page getPage() {
-        ensureInitialized(page, "Page not initialized. Call startSession() first.");
+        ensureInitialized(page, "Page not initialized. Call startPlaywrightSession() first.");
         return page;
     }
 
     /**
-     * Closes all resources in the correct order.
+     * Closes only the test-level resources (Page + Context).
+     * Browser and Playwright remain active until explicitly shut down.
      */
     public void closeSession() {
         try {
@@ -77,10 +83,21 @@ public final class PlaywrightSessionManager {
                 context.close();
             }
         } finally {
-            // Always close browser and Playwright at the very end
-            if (browser != null) {
-                browser.close();
+            page = null;
+            context = null;
+        }
+    }
+
+    /**
+     * Closes browser and Playwright after all tests (e.g. in @AfterAll or global teardown).
+     */
+    public static void sessionTeardown() {
+        PlaywrightSessionManager session = THREAD_SESSION.get();
+        try {
+            if (session.browser != null) {
+                session.browser.close();
             }
+        } finally {
             PlaywrightManager.close();
             THREAD_SESSION.remove();
         }
