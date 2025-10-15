@@ -3,7 +3,7 @@
 browserConfig:
   type: chromium          # Browser engine: chromium, firefox, webkit
   channel: chrome         # Browser channel: chrome/edge
-  headless: true          # Run in headless mode (true/false)
+  headless: false          # Run in headless mode (true/false)
   slowMo: 0               # Delay actions (ms) – useful for debugging
 
 contextConfig:
