@@ -2,7 +2,8 @@ package demo;
 
 import com.microsoft.playwright.Page;
 import io.github.qa.config.PlaywrightConfigLoader;
-import io.github.qa.playwright.page.PageFactory;
+import io.github.qa.playwright.session.PlaywrightSessionManager;
+import org.junit.jupiter.api.Assertions;
 
 public class TestExample {
     public static void main(String[] args) {
@@ -14,13 +15,13 @@ public class TestExample {
         System.out.println("Default timeout: " + config.getPageConfig().getDefaultTimeout());
         System.out.println("Screenshot on failure: " + config.getDebuggingConfig().isScreenshotsOnFailure());
 
-        Page page = PageFactory.createPage();
+        PlaywrightSessionManager session = PlaywrightSessionManager.startPlaywrightSession();
+        Page page = session.getPage();
+
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e){
-            throw new RuntimeException(e);
-        }
+        Assertions.assertTrue(page.title().contains("Google"));
+
+        session.closeSession();
     }
 }

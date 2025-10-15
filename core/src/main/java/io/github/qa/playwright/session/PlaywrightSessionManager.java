@@ -26,17 +26,16 @@ public final class PlaywrightSessionManager {
         // Prevent external construction
     }
 
-    /**
-     * Returns the thread-local Playwright session manager instance.
-     */
-    public static PlaywrightSessionManager current() {
-        return THREAD_SESSION.get();
+    public static PlaywrightSessionManager startPlaywrightSession() {
+        PlaywrightSessionManager session = THREAD_SESSION.get();
+        session.initializePlaywrightSessionStack();
+        return session;
     }
 
     /**
      * Initializes a full Playwright session stack (Browser → Context → Page).
      */
-    public void startSession() {
+    private void initializePlaywrightSessionStack() {
         this.browser = BrowserFactory.getBrowser();
         this.context = BrowserContextFactory.createContext();
         this.page = this.context.newPage();
