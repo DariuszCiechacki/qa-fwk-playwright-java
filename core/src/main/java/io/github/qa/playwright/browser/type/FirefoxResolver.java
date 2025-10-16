@@ -1,4 +1,4 @@
-package io.github.qa.playwright.browser;
+package io.github.qa.playwright.browser.type;
 
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;

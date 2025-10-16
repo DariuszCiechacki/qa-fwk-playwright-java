@@ -6,6 +6,7 @@ import com.microsoft.playwright.Page;
 import io.github.qa.playwright.PlaywrightManager;
 import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.context.BrowserContextFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Central orchestrator managing the lifecycle of Playwright components.
@@ -14,6 +15,7 @@ import io.github.qa.playwright.context.BrowserContextFactory;
  * and ensures correct creation and cleanup order.
  * </p>
  */
+@Slf4j
 public final class PlaywrightSessionManager {
     private static final ThreadLocal<PlaywrightSessionManager> THREAD_SESSION =
         ThreadLocal.withInitial(PlaywrightSessionManager::new);
@@ -29,12 +31,30 @@ public final class PlaywrightSessionManager {
     public static PlaywrightSessionManager startPlaywrightSession() {
         PlaywrightSessionManager session = THREAD_SESSION.get();
         session.initializePlaywrightSessionStack();
+        log.info("[INFO] Playwright session started.");
         return session;
     }
 
-    /** Returns the current thread's PlaywrightSessionManager instance. */
+    /**
+     * Returns the current thread's PlaywrightSessionManager instance.
+     */
     public static PlaywrightSessionManager current() {
         return THREAD_SESSION.get();
+    }
+
+    /**
+     * Final teardown after class/suite: close Browser + Playwright.
+     */
+    public static void sessionTeardown() {
+        PlaywrightSessionManager session = THREAD_SESSION.get();
+        try {
+            if (session.browser != null) {
+                session.browser.close();
+            }
+        } finally {
+            PlaywrightManager.close();
+            THREAD_SESSION.remove();
+        }
     }
 
     /**
@@ -86,21 +106,7 @@ public final class PlaywrightSessionManager {
             page = null;
             context = null;
         }
-    }
-
-    /**
-     * Closes browser and Playwright after all tests (e.g. in @AfterAll or global teardown).
-     */
-    public static void sessionTeardown() {
-        PlaywrightSessionManager session = THREAD_SESSION.get();
-        try {
-            if (session.browser != null) {
-                session.browser.close();
-            }
-        } finally {
-            PlaywrightManager.close();
-            THREAD_SESSION.remove();
-        }
+        log.info("[INFO] Playwright session closed.");
     }
 
     private void ensureInitialized(Object obj, String message) {

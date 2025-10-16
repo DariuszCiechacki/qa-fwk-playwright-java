@@ -13,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class PlaywrightManager {
-    /** Singleton Playwright instance. */
+    /**
+     * Singleton Playwright instance.
+     */
     private static Playwright playwrightInstance;
 
     private PlaywrightManager() {
@@ -30,6 +32,7 @@ public final class PlaywrightManager {
         if (playwrightInstance == null) {
             try {
                 playwrightInstance = Playwright.create();
+                log.info("[INFO] Playwright initialized successfully.");
             } catch (Exception e) {
                 throw new PlaywrightInitializationException("Failed to initialize Playwright", e);
             }
@@ -44,9 +47,9 @@ public final class PlaywrightManager {
         if (playwrightInstance != null) {
             try {
                 playwrightInstance.close();
-                log.info("Playwright instance closed successfully.");
+                log.info("[INFO] Playwright instance closed successfully.");
             } catch (Exception e) {
-                log.warn("Failed to close Playwright cleanly: {}", e.getMessage(), e);
+                log.warn("[WARN] Failed to close Playwright cleanly: {}", e.getMessage(), e);
             } finally {
                 playwrightInstance = null;
             }

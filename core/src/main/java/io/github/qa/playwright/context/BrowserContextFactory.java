@@ -6,6 +6,7 @@ import io.github.qa.config.ContextConfig;
 import io.github.qa.config.PlaywrightConfigLoader;
 import io.github.qa.exception.ContextInitializationException;
 import io.github.qa.playwright.browser.BrowserFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory responsible for creating new {@link com.microsoft.playwright.BrowserContext} instances.
@@ -14,6 +15,7 @@ import io.github.qa.playwright.browser.BrowserFactory;
  * loaded from <code>playwright-config.yml</code>.
  * </p>
  */
+@Slf4j
 public final class BrowserContextFactory {
     private BrowserContextFactory() {
         // utility class
@@ -45,7 +47,8 @@ public final class BrowserContextFactory {
                 );
             }
 
-            return browser.newContext(options);
+            BrowserContext context = browser.newContext(options);
+            return context;
 
         } catch (Exception e) {
             throw new ContextInitializationException("Failed to create browser context", e);

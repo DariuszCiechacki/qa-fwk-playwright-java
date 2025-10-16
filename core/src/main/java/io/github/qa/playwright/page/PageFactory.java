@@ -6,6 +6,7 @@ import io.github.qa.config.PageConfig;
 import io.github.qa.config.PlaywrightConfigLoader;
 import io.github.qa.exception.PageInitializationException;
 import io.github.qa.playwright.context.BrowserContextFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory responsible for creating and configuring new {@link com.microsoft.playwright.Page} instances.
@@ -14,6 +15,7 @@ import io.github.qa.playwright.context.BrowserContextFactory;
  * timeout settings from {@link io.github.qa.config.PageConfig}.
  * </p>
  */
+@Slf4j
 public final class PageFactory {
     private PageFactory() {
         // utility class
@@ -45,6 +47,7 @@ public final class PageFactory {
                 }
             }
 
+            log.info("[INFO] Created new Playwright Page with context ID: {}", context);
             return page;
 
         } catch (Exception e) {
