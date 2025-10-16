@@ -2,7 +2,7 @@ package io.github.qa.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import io.github.qa.config.exception.ConfigurationLoadException;
+import io.github.qa.exception.ConfigurationLoadException;
 import java.io.InputStream;
 import lombok.Getter;
 

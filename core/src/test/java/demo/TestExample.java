@@ -1,7 +1,14 @@
 package demo;
 
+import com.microsoft.playwright.Page;
 import io.github.qa.config.PlaywrightConfigLoader;
+import io.github.qa.junit.PlaywrightExtension;
+import io.github.qa.playwright.session.PlaywrightSessionManager;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(PlaywrightExtension.class)
 public class TestExample {
     public static void main(String[] args) {
         var config = PlaywrightConfigLoader.get().getConfig();
@@ -11,5 +18,14 @@ public class TestExample {
         System.out.println("Locale: " + config.getContextConfig().getLocale());
         System.out.println("Default timeout: " + config.getPageConfig().getDefaultTimeout());
         System.out.println("Screenshot on failure: " + config.getDebuggingConfig().isScreenshotsOnFailure());
+    }
+
+    @Test
+    void testExample() {
+        Page page = PlaywrightSessionManager.current().getPage();
+
+        page.navigate("https://google.pl");
+        System.out.println("Page title: " + page.title());
+        Assertions.assertTrue(page.title().contains("Google"));
     }
 }
