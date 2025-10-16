@@ -1,0 +1,21 @@
+# Temporary on framework side to provide implementation for config management
+
+browserConfig:
+  type: chromium          # Browser engine: chromium, firefox, webkit
+  channel: chrome         # Browser channel: chrome/edge
+  headless: true          # Run in headless mode (true/false)
+  slowMo: 0               # Delay actions (ms) – useful for debugging
+
+contextConfig:
+  ignoreHTTPSErrors: true # Ignore HTTPS certificate errors
+  locale: en-US           # Browser locale
+  viewport:
+    width: 1920
+    height: 1080
+
+pageConfig:
+  defaultTimeout: 10000   # Default timeout for element actions (ms)
+  navigationTimeout: 20000 # Timeout for navigation (ms)
+
+debuggingConfig:
+  screenshotsOnFailure: true # Capture screenshot when test fails
