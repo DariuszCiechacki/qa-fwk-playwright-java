@@ -1,58 +1,49 @@
 package io.github.qa.playwright;
 
 import com.microsoft.playwright.Playwright;
-import io.github.qa.exception.PlaywrightInitializationException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Manages lifecycle of a single {@link Playwright} instance.
- * Ensures that Playwright is created once and closed safely at the end of execution.
- * Intended to be used by factories such as {@link io.github.qa.playwright.browser.BrowserFactory},
- * {@link io.github.qa.playwright.context.BrowserContextFactory} and {@link io.github.qa.playwright.page.PageFactory}.
+ * Manages lifecycle of a single global {@link Playwright} instance.
+ * <p>
+ * Created once for the entire test run and closed safely after all tests.
+ * </p>
  */
 @Slf4j
 public final class PlaywrightManager {
 
-    /**
-     * Singleton Playwright instance.
-     */
-    private static Playwright playwrightInstance;
+    private static final ThreadLocal<Playwright> THREAD_PLAYWRIGHT =
+            ThreadLocal.withInitial(() -> {
+                Playwright pw = Playwright.create();
+                log.info("[{}] Playwright instance created.", Thread.currentThread().getName());
+                return pw;
+            });
 
     private PlaywrightManager() {
-        // Utility class; prevent instantiation.
     }
 
     /**
-     * Returns the active {@link Playwright} instance, creating it if necessary.
-     *
-     * @return singleton Playwright instance.
-     * @throws PlaywrightInitializationException if initialization fails.
+     * Returns Playwright for the current test thread.
      */
-    public static synchronized Playwright getInstance() {
-        if (playwrightInstance == null) {
-            try {
-                playwrightInstance = Playwright.create();
-                log.info("Playwright initialized successfully.");
-            } catch (Exception e) {
-                throw new PlaywrightInitializationException(e);
-            }
-        }
-        return playwrightInstance;
+    public static Playwright getCurrentInstance() {
+        return THREAD_PLAYWRIGHT.get();
     }
 
     /**
-     * Closes the current Playwright instance safely, if active.
+     * Closes Playwright for the current thread.
      */
-    public static synchronized void close() {
-        if (playwrightInstance != null) {
+    public static void close() {
+        Playwright pw = THREAD_PLAYWRIGHT.get();
+        if (pw != null) {
             try {
-                playwrightInstance.close();
-                log.info("Playwright instance closed successfully.");
+                pw.close();
+                log.info("[{}] Playwright closed.", Thread.currentThread().getName());
             } catch (Exception e) {
-                log.warn("Failed to close Playwright cleanly: {}", e.getMessage(), e);
+                log.warn("[{}] Failed to close Playwright cleanly: {}", Thread.currentThread().getName(), e.getMessage());
             } finally {
-                playwrightInstance = null;
+                THREAD_PLAYWRIGHT.remove();
             }
         }
     }
 }
+

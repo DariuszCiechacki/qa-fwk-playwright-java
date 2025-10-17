@@ -3,14 +3,17 @@ package io.github.qa.playwright.context;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import io.github.qa.exception.ContextInitializationException;
+import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.config.PlaywrightConfigProvider;
 import io.github.qa.playwright.config.context.ContextConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Factory responsible for creating new {@link BrowserContext} instances.
- * Each context is isolated and configured according to {@link ContextConfig}
- * loaded from <code>playwright-config.yml</code>.
+ * Factory responsible for creating new isolated {@link BrowserContext} instances.
+ * <p>
+ * Each test gets its own context, created from the global shared {@link Browser}.
+ * Contexts are independent, allowing full isolation between parallel tests.
+ * </p>
  */
 @Slf4j
 public final class BrowserContextFactory {
@@ -18,34 +21,37 @@ public final class BrowserContextFactory {
     private BrowserContextFactory() {
     }
 
-    /**
-     * Creates a new, fully configured {@link BrowserContext}.
-     *
-     * @return new BrowserContext ready for use.
-     * @throws ContextInitializationException if context creation fails.
-     */
-    public static BrowserContext createContext(Browser browser) {
+    public static BrowserContext createContext() {
         try {
-            // Load context configuration
-            ContextConfig contextConfig = PlaywrightConfigProvider.get().getConfig().getContextConfig();
+            Browser browser = BrowserFactory.getBrowser();
+            ContextConfig config = PlaywrightConfigProvider.get().getConfig().getContextConfig();
 
-            // Configure context options based on loaded configuration
             Browser.NewContextOptions options = new Browser.NewContextOptions()
-                    .setIgnoreHTTPSErrors(contextConfig.isIgnoreHTTPSErrors())
-                    .setLocale(contextConfig.getLocale());
+                    .setIgnoreHTTPSErrors(config.isIgnoreHTTPSErrors())
+                    .setLocale(config.getLocale());
 
-            // Set viewport size if specified. Playwright provides a default 1280×720 if not set.
-            if (contextConfig.getViewport() != null) {
-                options.setViewportSize(
-                        contextConfig.getViewport().getWidth(),
-                        contextConfig.getViewport().getHeight()
-                );
+            if (config.getViewport() != null) {
+                options.setViewportSize(config.getViewport().getWidth(), config.getViewport().getHeight());
             }
 
-            return browser.newContext(options);
+            BrowserContext context = browser.newContext(options);
+            log.info("[{}] BrowserContext created (locale={}, ignoreHTTPSErrors={})",
+                    Thread.currentThread().getName(), config.getLocale(), config.isIgnoreHTTPSErrors());
 
+            return context;
         } catch (Exception e) {
             throw new ContextInitializationException(e);
+        }
+    }
+
+    public static void closeContext(BrowserContext context) {
+        if (context != null) {
+            try {
+                context.close();
+                log.info("[{}] BrowserContext closed.", Thread.currentThread().getName());
+            } catch (Exception e) {
+                log.warn("[{}] Failed to close BrowserContext cleanly: {}", Thread.currentThread().getName(), e.getMessage());
+            }
         }
     }
 }

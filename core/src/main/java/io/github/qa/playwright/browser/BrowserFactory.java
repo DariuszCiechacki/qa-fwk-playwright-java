@@ -17,8 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 /**
- * Factory responsible for creating and managing a single {@link Browser} instance.
- * Uses browser-type resolvers to obtain the correct {@link BrowserType}, then applies launch options defined in the configuration.
+ * Factory responsible for creating and managing a single global {@link Browser} instance.
+ * <p>
+ * The Browser is launched once from the global {@link Playwright} instance
+ * and safely shared across all test threads. Each test creates its own
+ * {@link com.microsoft.playwright.BrowserContext} for full isolation.
+ * </p>
  */
 @Slf4j
 public final class BrowserFactory {
@@ -28,60 +32,71 @@ public final class BrowserFactory {
             BrowserTypeName.FIREFOX.getValue(), new FirefoxResolver(),
             BrowserTypeName.WEBKIT.getValue(), new WebkitResolver()
     );
+
     private static final Map<String, ChromiumChannelResolver> CHANNEL_RESOLVERS = Map.of(
             ChromiumChannelName.CHROME.getValue(), new ChromeChannelResolver(),
             ChromiumChannelName.MSEDGE.getValue(), new EdgeChannelResolver()
     );
 
-    private static Browser browserInstance;
+    /**
+     * Browser per test thread
+     */
+    private static final ThreadLocal<Browser> THREAD_BROWSER = new ThreadLocal<>();
 
     private BrowserFactory() {
     }
 
-    /**
-     * Returns a singleton {@link Browser} instance created according to configuration.
-     *
-     * @return active Playwright {@link Browser}.
-     * @throws BrowserInitializationException if browser creation fails.
-     */
-    public static synchronized Browser getBrowser() {
-        if (browserInstance == null) {
-            try {
-                // Ensure Playwright is initialized
-                Playwright playwright = PlaywrightManager.getInstance();
-                // Load browser configuration
-                BrowserConfig browserConfig = PlaywrightConfigProvider.get().getConfig().getBrowserConfig();
+    public static Browser getBrowser() {
+        Browser browser = THREAD_BROWSER.get();
+        if (browser == null) {
+            browser = createBrowser();
+            THREAD_BROWSER.set(browser);
+        }
+        return browser;
+    }
 
-                // Resolve the appropriate BrowserType
-                String type = BrowserTypeName.getByName(browserConfig.getType());
-                BrowserType browserType = BROWSER_TYPE_RESOLVERS.get(type).resolve(playwright);
-                log.info("Creating browser of type: {}", type);
+    private static Browser createBrowser() {
+        try {
+            Playwright playwright = PlaywrightManager.getCurrentInstance();
+            BrowserConfig config = PlaywrightConfigProvider.get().getConfig().getBrowserConfig();
 
-                // Set up browser launch options
-                BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                        .setHeadless(browserConfig.isHeadless())
-                        .setSlowMo(browserConfig.getSlowMo());
+            String type = BrowserTypeName.getByName(config.getType());
+            BrowserType browserType = BROWSER_TYPE_RESOLVERS.get(type).resolve(playwright);
 
-                // Apply channel only for Chromium-based browsers
-                if (BrowserTypeName.CHROMIUM.getValue().equals(type)) {
-                    if (browserConfig.getChannel() == null || browserConfig.getChannel().isBlank()) {
-                        log.info("No browser channel specified; using default for type: {}", type);
-                    } else {
-                        String channel = ChromiumChannelName.getByName(browserConfig.getChannel());
-                        ChromiumChannelResolver channelResolver = CHANNEL_RESOLVERS.get(channel);
-                        channelResolver.applyChannel(options);
-                        log.info("Using Chromium channel: {}", channel);
-                    }
+            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
+                    .setHeadless(config.isHeadless())
+                    .setSlowMo(config.getSlowMo());
+
+            if (BrowserTypeName.CHROMIUM.getValue().equals(type)) {
+                String channel = config.getChannel();
+                if (channel != null && !channel.isBlank()) {
+                    String resolved = ChromiumChannelName.getByName(channel);
+                    CHANNEL_RESOLVERS.get(resolved).applyChannel(options);
                 }
-                browserInstance = browserType.launch(options);
+            }
+
+            Browser browser = browserType.launch(options);
+            log.info("[{}] Browser instance created (type={}, headless={})",
+                    Thread.currentThread().getName(), type, config.isHeadless());
+            return browser;
+
+        } catch (Exception e) {
+            throw new BrowserInitializationException(e);
+        }
+    }
+
+    public static void closeBrowser() {
+        Browser browser = THREAD_BROWSER.get();
+        if (browser != null) {
+            try {
+                browser.close();
+                log.info("[{}] Browser closed.", Thread.currentThread().getName());
             } catch (Exception e) {
-                throw new BrowserInitializationException(e);
+                log.warn("[{}] Failed to close Browser cleanly: {}", Thread.currentThread().getName(), e.getMessage());
+            } finally {
+                THREAD_BROWSER.remove();
             }
         }
-        return browserInstance;
-    }
-
-    public static synchronized void reset() {
-        browserInstance = null;
     }
 }
+

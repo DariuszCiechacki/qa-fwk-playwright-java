@@ -23,7 +23,7 @@ public class TestExample {
 
     @Test
     void testExample1() {
-        Page page = PlaywrightSessionManager.current().getPage();
+        Page page = PlaywrightSessionManager.getCurrentSession().getCurrentSessionPage();
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
         Assertions.assertTrue(page.title().contains("Google"));
@@ -31,7 +31,7 @@ public class TestExample {
 
     @Test
     void testExample2() {
-        Page page = PlaywrightSessionManager.current().getPage();
+        Page page = PlaywrightSessionManager.getCurrentSession().getCurrentSessionPage();
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
         Assertions.assertTrue(page.title().contains("Google"));
@@ -39,7 +39,7 @@ public class TestExample {
 
     @Test
     void testExample3() {
-        Page page = PlaywrightSessionManager.current().getPage();
+        Page page = PlaywrightSessionManager.getCurrentSession().getCurrentSessionPage();
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
         Assertions.assertTrue(page.title().contains("Google"));
