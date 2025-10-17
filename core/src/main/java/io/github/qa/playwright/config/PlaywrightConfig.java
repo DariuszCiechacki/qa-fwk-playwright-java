@@ -8,8 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Root configuration class representing all configurable aspects of the Playwright framework.
- * <p>Loaded from {@code playwright-config.yml} via {@link PlaywrightConfigProvider}.</p>
+ * Root configuration class representing all configurable aspects of the Playwright.
+ * Loaded from {@code playwright-config.yml} via {@link PlaywrightConfigProvider}.
  */
 @Getter
 @Setter

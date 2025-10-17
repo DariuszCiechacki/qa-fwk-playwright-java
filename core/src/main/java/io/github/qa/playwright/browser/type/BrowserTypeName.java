@@ -2,6 +2,10 @@ package io.github.qa.playwright.browser.type;
 
 import lombok.Getter;
 
+/**
+ * Parses a browser type name into an enum value (e.g., "chromium" → BrowserTypeName. CHROMIUM).
+ * Throws IllegalArgumentException for unsupported values.
+ */
 @Getter
 public enum BrowserTypeName {
     CHROMIUM("chromium"),

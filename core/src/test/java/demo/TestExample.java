@@ -24,7 +24,6 @@ public class TestExample {
     @Test
     void testExample() {
         Page page = PlaywrightSessionManager.current().getPage();
-
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
         Assertions.assertTrue(page.title().contains("Google"));

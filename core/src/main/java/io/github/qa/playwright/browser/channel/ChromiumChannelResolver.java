@@ -6,6 +6,7 @@ import com.microsoft.playwright.BrowserType;
  * Defines how to apply a specific Chromium channel
  * (e.g. Chrome, Edge) to the {@link BrowserType.LaunchOptions}.
  */
+// ToDo: verify if its needed - Playwright resolves channel itself.
 public interface ChromiumChannelResolver {
 
     /**

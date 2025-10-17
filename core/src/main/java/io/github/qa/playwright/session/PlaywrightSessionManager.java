@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class PlaywrightSessionManager {
     private static final ThreadLocal<PlaywrightSessionManager> THREAD_SESSION =
-        ThreadLocal.withInitial(PlaywrightSessionManager::new);
+            ThreadLocal.withInitial(PlaywrightSessionManager::new);
 
     private Browser browser;
     private BrowserContext context;
@@ -29,10 +29,13 @@ public final class PlaywrightSessionManager {
         // Prevent external construction
     }
 
+    /**
+     * Initializes a fresh BrowserContext and Page for the current test. A single Browser is reused per class run.
+     */
     public static void startPlaywrightSession() {
         PlaywrightSessionManager session = THREAD_SESSION.get();
         session.initializePlaywrightSessionStack();
-        log.info("[INFO] Playwright session started.");
+        log.info("Playwright session started.");
     }
 
     /**
@@ -49,7 +52,11 @@ public final class PlaywrightSessionManager {
         PlaywrightSessionManager session = THREAD_SESSION.get();
         try {
             if (session.browser != null) {
-                session.browser.close();
+                try {
+                    session.browser.close();
+                } finally {
+                    BrowserFactory.reset();
+                }
             }
         } finally {
             PlaywrightManager.close();
@@ -62,8 +69,8 @@ public final class PlaywrightSessionManager {
      */
     private void initializePlaywrightSessionStack() {
         this.browser = BrowserFactory.getBrowser();
-        this.context = BrowserContextFactory.createContext();
-        this.page = PageFactory.createPage();
+        this.context = BrowserContextFactory.createContext(this.browser);
+        this.page = PageFactory.createPage(this.context);
     }
 
     /**
@@ -91,22 +98,21 @@ public final class PlaywrightSessionManager {
     }
 
     /**
-     * Closes only the test-level resources (Page + Context).
-     * Browser and Playwright remain active until explicitly shut down.
+     * Closes the current test’s Page and its backing BrowserContext.
+     * The shared Browser remains open until sessionTeardown().
      */
     public void closeSession() {
         try {
-            if (page != null) {
-                page.close();
-            }
             if (context != null) {
                 context.close();
             }
+        } catch (Exception e) {
+            log.warn("Error closing context: {}", e.getMessage());
         } finally {
             page = null;
             context = null;
         }
-        log.info("[INFO] Playwright session closed.");
+        log.info("Playwright session closed.");
     }
 
     private void ensureInitialized(Object obj, String message) {

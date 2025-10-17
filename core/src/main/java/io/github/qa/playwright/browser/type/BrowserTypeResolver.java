@@ -10,8 +10,8 @@ public interface BrowserTypeResolver {
     /**
      * Returns the appropriate {@link BrowserType} for this resolver.
      *
-     * @param playwright shared Playwright instance
-     * @return resolved BrowserType
+     * @param playwright shared Playwright instance.
+     * @return resolved BrowserType.
      */
     BrowserType resolve(Playwright playwright);
 }
