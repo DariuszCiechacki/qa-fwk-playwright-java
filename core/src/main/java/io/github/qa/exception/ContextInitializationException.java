@@ -4,7 +4,9 @@ package io.github.qa.exception;
  * Exception thrown when a BrowserContext cannot be created or configured.
  */
 public class ContextInitializationException extends RuntimeException {
-    public ContextInitializationException(String message, Throwable cause) {
-        super(message, cause);
+    private static final String DEFAULT_MESSAGE = "Failed to create browser context.";
+
+    public ContextInitializationException(Throwable cause) {
+        super(DEFAULT_MESSAGE, cause);
     }
 }

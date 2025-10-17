@@ -6,6 +6,8 @@ import com.microsoft.playwright.Page;
 import io.github.qa.playwright.PlaywrightManager;
 import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.context.BrowserContextFactory;
+import io.github.qa.playwright.page.PageFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Central orchestrator managing the lifecycle of Playwright components.
@@ -14,9 +16,10 @@ import io.github.qa.playwright.context.BrowserContextFactory;
  * and ensures correct creation and cleanup order.
  * </p>
  */
+@Slf4j
 public final class PlaywrightSessionManager {
     private static final ThreadLocal<PlaywrightSessionManager> THREAD_SESSION =
-        ThreadLocal.withInitial(PlaywrightSessionManager::new);
+            ThreadLocal.withInitial(PlaywrightSessionManager::new);
 
     private Browser browser;
     private BrowserContext context;
@@ -26,15 +29,39 @@ public final class PlaywrightSessionManager {
         // Prevent external construction
     }
 
-    public static PlaywrightSessionManager startPlaywrightSession() {
+    /**
+     * Initializes a fresh BrowserContext and Page for the current test. A single Browser is reused per class run.
+     */
+    public static void startPlaywrightSession() {
         PlaywrightSessionManager session = THREAD_SESSION.get();
         session.initializePlaywrightSessionStack();
-        return session;
+        log.info("Playwright session started.");
     }
 
-    /** Returns the current thread's PlaywrightSessionManager instance. */
+    /**
+     * Returns the current thread's PlaywrightSessionManager instance.
+     */
     public static PlaywrightSessionManager current() {
         return THREAD_SESSION.get();
+    }
+
+    /**
+     * Final teardown after class/suite: close Browser + Playwright.
+     */
+    public static void sessionTeardown() {
+        PlaywrightSessionManager session = THREAD_SESSION.get();
+        try {
+            if (session.browser != null) {
+                try {
+                    session.browser.close();
+                } finally {
+                    BrowserFactory.reset();
+                }
+            }
+        } finally {
+            PlaywrightManager.close();
+            THREAD_SESSION.remove();
+        }
     }
 
     /**
@@ -42,8 +69,8 @@ public final class PlaywrightSessionManager {
      */
     private void initializePlaywrightSessionStack() {
         this.browser = BrowserFactory.getBrowser();
-        this.context = BrowserContextFactory.createContext();
-        this.page = this.context.newPage();
+        this.context = BrowserContextFactory.createContext(this.browser);
+        this.page = PageFactory.createPage(this.context);
     }
 
     /**
@@ -71,36 +98,21 @@ public final class PlaywrightSessionManager {
     }
 
     /**
-     * Closes only the test-level resources (Page + Context).
-     * Browser and Playwright remain active until explicitly shut down.
+     * Closes the current test’s Page and its backing BrowserContext.
+     * The shared Browser remains open until sessionTeardown().
      */
     public void closeSession() {
         try {
-            if (page != null) {
-                page.close();
-            }
             if (context != null) {
                 context.close();
             }
+        } catch (Exception e) {
+            log.warn("Error closing context: {}", e.getMessage());
         } finally {
             page = null;
             context = null;
         }
-    }
-
-    /**
-     * Closes browser and Playwright after all tests (e.g. in @AfterAll or global teardown).
-     */
-    public static void sessionTeardown() {
-        PlaywrightSessionManager session = THREAD_SESSION.get();
-        try {
-            if (session.browser != null) {
-                session.browser.close();
-            }
-        } finally {
-            PlaywrightManager.close();
-            THREAD_SESSION.remove();
-        }
+        log.info("Playwright session closed.");
     }
 
     private void ensureInitialized(Object obj, String message) {

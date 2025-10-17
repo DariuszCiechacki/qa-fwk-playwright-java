@@ -1,4 +1,4 @@
-package io.github.qa.playwright.browser;
+package io.github.qa.playwright.browser.type;
 
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;
@@ -10,8 +10,8 @@ public interface BrowserTypeResolver {
     /**
      * Returns the appropriate {@link BrowserType} for this resolver.
      *
-     * @param playwright shared Playwright instance
-     * @return resolved BrowserType
+     * @param playwright shared Playwright instance.
+     * @return resolved BrowserType.
      */
     BrowserType resolve(Playwright playwright);
 }

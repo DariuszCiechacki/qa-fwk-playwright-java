@@ -1,4 +1,4 @@
-package io.github.qa.config;
+package io.github.qa.playwright.config.debugging;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DebuggingConfig {
-    /** Whether to automatically capture a screenshot when a test fails. */
+
+    /**
+     * Whether to automatically capture a screenshot when a test fails.
+     */
     private boolean screenshotsOnFailure;
 }

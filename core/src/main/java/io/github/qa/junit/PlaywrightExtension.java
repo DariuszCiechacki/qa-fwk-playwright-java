@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 public class PlaywrightExtension implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+    
     @Override
     public void beforeEach(ExtensionContext context) {
         PlaywrightSessionManager.startPlaywrightSession();

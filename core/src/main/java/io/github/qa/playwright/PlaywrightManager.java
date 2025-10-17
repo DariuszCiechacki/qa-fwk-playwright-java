@@ -5,15 +5,17 @@ import io.github.qa.exception.PlaywrightInitializationException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Manages lifecycle of a single {@link com.microsoft.playwright.Playwright} instance.
- * <p>
+ * Manages lifecycle of a single {@link Playwright} instance.
  * Ensures that Playwright is created once and closed safely at the end of execution.
- * Intended to be used by factories such as {@code BrowserFactory}, {@code ContextFactory} and {@code PageFactory}.
- * </p>
+ * Intended to be used by factories such as {@link io.github.qa.playwright.browser.BrowserFactory},
+ * {@link io.github.qa.playwright.context.BrowserContextFactory} and {@link io.github.qa.playwright.page.PageFactory}.
  */
 @Slf4j
 public final class PlaywrightManager {
-    /** Singleton Playwright instance. */
+
+    /**
+     * Singleton Playwright instance.
+     */
     private static Playwright playwrightInstance;
 
     private PlaywrightManager() {
@@ -23,15 +25,16 @@ public final class PlaywrightManager {
     /**
      * Returns the active {@link Playwright} instance, creating it if necessary.
      *
-     * @return singleton Playwright instance
-     * @throws PlaywrightInitializationException if initialization fails
+     * @return singleton Playwright instance.
+     * @throws PlaywrightInitializationException if initialization fails.
      */
     public static synchronized Playwright getInstance() {
         if (playwrightInstance == null) {
             try {
                 playwrightInstance = Playwright.create();
+                log.info("Playwright initialized successfully.");
             } catch (Exception e) {
-                throw new PlaywrightInitializationException("Failed to initialize Playwright", e);
+                throw new PlaywrightInitializationException(e);
             }
         }
         return playwrightInstance;

@@ -1,4 +1,4 @@
-package io.github.qa.config;
+package io.github.qa.playwright.config.page;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,9 +9,14 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PageConfig {
-    /** Default timeout (in milliseconds) for actions performed on page elements. */
+
+    /**
+     * Default timeout (in milliseconds) for actions performed on page elements.
+     */
     private int defaultTimeout;
 
-    /** Timeout (in milliseconds) for page navigation operations. */
+    /**
+     * Timeout (in milliseconds) for page navigation operations.
+     */
     private int navigationTimeout;
 }
