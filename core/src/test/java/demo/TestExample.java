@@ -1,8 +1,8 @@
 package demo;
 
 import com.microsoft.playwright.Page;
-import io.github.qa.config.PlaywrightConfigLoader;
 import io.github.qa.junit.PlaywrightExtension;
+import io.github.qa.playwright.config.PlaywrightConfigProvider;
 import io.github.qa.playwright.session.PlaywrightSessionManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,9 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(PlaywrightExtension.class)
 public class TestExample {
     public static void main(String[] args) {
-        var config = PlaywrightConfigLoader.get().getConfig();
+        var config = PlaywrightConfigProvider.get().getConfig();
         System.out.println("=== Framework Configuration ===");
         System.out.println("Browser type: " + config.getBrowserConfig().getType());
+        System.out.println("Browser type: " + config.getBrowserConfig().getChannel());
         System.out.println("Headless: " + config.getBrowserConfig().isHeadless());
         System.out.println("Locale: " + config.getContextConfig().getLocale());
         System.out.println("Default timeout: " + config.getPageConfig().getDefaultTimeout());

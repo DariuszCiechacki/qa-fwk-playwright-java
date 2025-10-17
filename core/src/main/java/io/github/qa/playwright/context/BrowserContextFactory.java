@@ -2,21 +2,22 @@ package io.github.qa.playwright.context;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
-import io.github.qa.config.ContextConfig;
-import io.github.qa.config.PlaywrightConfigLoader;
 import io.github.qa.exception.ContextInitializationException;
 import io.github.qa.playwright.browser.BrowserFactory;
+import io.github.qa.playwright.config.PlaywrightConfigProvider;
+import io.github.qa.playwright.config.context.ContextConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Factory responsible for creating new {@link com.microsoft.playwright.BrowserContext} instances.
  * <p>
- * Each context is isolated and configured according to {@link io.github.qa.config.ContextConfig}
+ * Each context is isolated and configured according to {@link ContextConfig}
  * loaded from <code>playwright-config.yml</code>.
  * </p>
  */
 @Slf4j
 public final class BrowserContextFactory {
+
     private BrowserContextFactory() {
         // utility class
     }
@@ -32,7 +33,7 @@ public final class BrowserContextFactory {
             // Obtain the browser instance from BrowserFactory
             Browser browser = BrowserFactory.getBrowser();
             // Load context configuration
-            ContextConfig contextConfig = PlaywrightConfigLoader.get().getConfig().getContextConfig();
+            ContextConfig contextConfig = PlaywrightConfigProvider.get().getConfig().getContextConfig();
 
             // Configure context options based on loaded configuration
             Browser.NewContextOptions options = new Browser.NewContextOptions()
@@ -47,11 +48,10 @@ public final class BrowserContextFactory {
                 );
             }
 
-            BrowserContext context = browser.newContext(options);
-            return context;
+            return browser.newContext(options);
 
         } catch (Exception e) {
-            throw new ContextInitializationException("Failed to create browser context", e);
+            throw new ContextInitializationException(e);
         }
     }
 }

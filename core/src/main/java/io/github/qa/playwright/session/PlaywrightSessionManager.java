@@ -6,6 +6,7 @@ import com.microsoft.playwright.Page;
 import io.github.qa.playwright.PlaywrightManager;
 import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.context.BrowserContextFactory;
+import io.github.qa.playwright.page.PageFactory;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -28,11 +29,10 @@ public final class PlaywrightSessionManager {
         // Prevent external construction
     }
 
-    public static PlaywrightSessionManager startPlaywrightSession() {
+    public static void startPlaywrightSession() {
         PlaywrightSessionManager session = THREAD_SESSION.get();
         session.initializePlaywrightSessionStack();
         log.info("[INFO] Playwright session started.");
-        return session;
     }
 
     /**
@@ -63,7 +63,7 @@ public final class PlaywrightSessionManager {
     private void initializePlaywrightSessionStack() {
         this.browser = BrowserFactory.getBrowser();
         this.context = BrowserContextFactory.createContext();
-        this.page = this.context.newPage();
+        this.page = PageFactory.createPage();
     }
 
     /**

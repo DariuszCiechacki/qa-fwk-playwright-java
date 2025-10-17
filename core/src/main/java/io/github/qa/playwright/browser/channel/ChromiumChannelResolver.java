@@ -9,10 +9,7 @@ import com.microsoft.playwright.BrowserType;
 public interface ChromiumChannelResolver {
 
     /**
-     * Applies the channel to the provided LaunchOptions.
-     *
-     * @param options browser launch options
-     * @return modified launch options
+     * Applies a specific Chromium channel to the given launch options.
      */
-    BrowserType.LaunchOptions applyChannel(BrowserType.LaunchOptions options);
+    void applyChannel(BrowserType.LaunchOptions options);
 }

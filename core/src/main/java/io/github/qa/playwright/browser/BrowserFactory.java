@@ -3,16 +3,19 @@ package io.github.qa.playwright.browser;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;
-import io.github.qa.config.PlaywrightConfigLoader;
 import io.github.qa.exception.BrowserInitializationException;
 import io.github.qa.playwright.PlaywrightManager;
 import io.github.qa.playwright.browser.channel.ChromeChannelResolver;
+import io.github.qa.playwright.browser.channel.ChromiumChannelName;
 import io.github.qa.playwright.browser.channel.ChromiumChannelResolver;
 import io.github.qa.playwright.browser.channel.EdgeChannelResolver;
+import io.github.qa.playwright.browser.type.BrowserTypeName;
 import io.github.qa.playwright.browser.type.BrowserTypeResolver;
 import io.github.qa.playwright.browser.type.ChromiumResolver;
 import io.github.qa.playwright.browser.type.FirefoxResolver;
 import io.github.qa.playwright.browser.type.WebkitResolver;
+import io.github.qa.playwright.config.PlaywrightConfigProvider;
+import io.github.qa.playwright.config.browser.BrowserConfig;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,13 +29,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public final class BrowserFactory {
     private static final Map<String, BrowserTypeResolver> BROWSER_TYPE_RESOLVERS = Map.of(
-        "chromium", new ChromiumResolver(),
-        "firefox", new FirefoxResolver(),
-        "webkit", new WebkitResolver()
+        BrowserTypeName.CHROMIUM.getValue(), new ChromiumResolver(),
+        BrowserTypeName.FIREFOX.getValue(), new FirefoxResolver(),
+        BrowserTypeName.WEBKIT.getValue(), new WebkitResolver()
     );
     private static final Map<String, ChromiumChannelResolver> CHANNEL_RESOLVERS = Map.of(
-        "chrome", new ChromeChannelResolver(),
-        "msedge", new EdgeChannelResolver()
+        ChromiumChannelName.CHROME.getValue(), new ChromeChannelResolver(),
+        ChromiumChannelName.MSEDGE.getValue(), new EdgeChannelResolver()
     );
 
     private static Browser browserInstance;
@@ -51,42 +54,32 @@ public final class BrowserFactory {
             try {
                 // Ensure Playwright is initialized
                 Playwright playwright = PlaywrightManager.getInstance();
-
                 // Load browser configuration
-                var browserConfig = PlaywrightConfigLoader.get().getConfig().getBrowserConfig();
+                BrowserConfig browserConfig = PlaywrightConfigProvider.get().getConfig().getBrowserConfig();
+
                 // Resolve the appropriate BrowserType
-                String type = browserConfig.getType().toLowerCase();
-                BrowserTypeResolver resolver = BROWSER_TYPE_RESOLVERS.get(type);
-                if (resolver == null) {
-                    throw new IllegalArgumentException("Unsupported browser type: " + type);
-                }
-                BrowserType browserType = resolver.resolve(playwright);
+                String type = BrowserTypeName.getByName(browserConfig.getType());
+                BrowserType browserType = BROWSER_TYPE_RESOLVERS.get(type).resolve(playwright);
                 log.info("[INFO] Creating browser of type: {}", type);
 
+                // Set up browser launch options
                 BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
                     .setHeadless(browserConfig.isHeadless())
                     .setSlowMo(browserConfig.getSlowMo());
 
                 // Apply channel only for Chromium-based browsers
-                if ("chromium".equals(type)) {
-                    String channel = browserConfig.getChannel();
-                    if (channel != null && !channel.isBlank()) {
-                        channel = channel.trim().toLowerCase();
-                        ChromiumChannelResolver channelResolver = CHANNEL_RESOLVERS.get(channel);
-                        if (channelResolver != null) {
-                            channelResolver.applyChannel(options);
-                            log.info("[INFO] Using Chromium channel: {}", channel);
-                        } else {
-                            log.warn("[WARN] Unknown Chromium channel '{}'; using default Chromium.", channel);
-                        }
-                    } else {
-                        log.info("[INFO] No Chromium channel specified; using default Chromium.");
-                    }
+                if (browserConfig.getChannel() == null || browserConfig.getChannel().isBlank()) {
+                    log.info("[INFO] No browser channel specified; using default for type: {}", type);
+                } else {
+                    String channel = ChromiumChannelName.getByName(browserConfig.getChannel());
+                    ChromiumChannelResolver channelResolver = CHANNEL_RESOLVERS.get(channel);
+                    channelResolver.applyChannel(options);
+                    log.info("[INFO] Using Chromium channel: {}", channel);
                 }
 
                 browserInstance = browserType.launch(options);
             } catch (Exception e) {
-                throw new BrowserInitializationException("Failed to create browser instance", e);
+                throw new BrowserInitializationException(e);
             }
         }
         return browserInstance;

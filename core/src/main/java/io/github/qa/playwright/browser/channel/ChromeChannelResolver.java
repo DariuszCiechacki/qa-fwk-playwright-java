@@ -6,8 +6,9 @@ import com.microsoft.playwright.BrowserType;
  * Resolver for the Chrome browser channel.
  */
 public class ChromeChannelResolver implements ChromiumChannelResolver {
+
     @Override
-    public BrowserType.LaunchOptions applyChannel(BrowserType.LaunchOptions options) {
-        return options.setChannel("chrome");
+    public void applyChannel(BrowserType.LaunchOptions options) {
+        options.setChannel(ChromiumChannelName.CHROME.getValue());
     }
 }

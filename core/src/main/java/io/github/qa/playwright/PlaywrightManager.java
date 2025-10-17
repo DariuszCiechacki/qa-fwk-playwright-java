@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public final class PlaywrightManager {
+
     /**
      * Singleton Playwright instance.
      */
@@ -34,7 +35,7 @@ public final class PlaywrightManager {
                 playwrightInstance = Playwright.create();
                 log.info("[INFO] Playwright initialized successfully.");
             } catch (Exception e) {
-                throw new PlaywrightInitializationException("Failed to initialize Playwright", e);
+                throw new PlaywrightInitializationException(e);
             }
         }
         return playwrightInstance;

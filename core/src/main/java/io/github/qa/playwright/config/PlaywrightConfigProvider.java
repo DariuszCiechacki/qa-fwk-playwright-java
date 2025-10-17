@@ -1,4 +1,4 @@
-package io.github.qa.config;
+package io.github.qa.playwright.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -13,28 +13,28 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Getter
-public class PlaywrightConfigLoader {
+public class PlaywrightConfigProvider {
     private static final String CONFIG_FILE = "playwright-config.yml";
     private final PlaywrightConfig config;
 
-    private PlaywrightConfigLoader() {
+    private PlaywrightConfigProvider() {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE)) {
             if (input == null) {
-                throw new ConfigurationLoadException(
-                    "Configuration file not found: " + CONFIG_FILE, null
+                throw new ConfigurationLoadException("Configuration file not found: " + CONFIG_FILE, null
                 );
             }
             ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
             this.config = mapper.readValue(input, PlaywrightConfig.class);
         } catch (Exception e) {
-            throw new ConfigurationLoadException("Failed to load Playwright configuration", e);
+            throw new ConfigurationLoadException("Failed to load Playwright configuration.", e
+            );
         }
     }
 
     /**
      * Returns the singleton loader instance.
      */
-    public static PlaywrightConfigLoader get() {
+    public static PlaywrightConfigProvider get() {
         return LazyConfigLoader.INSTANCE;
     }
 
@@ -42,6 +42,6 @@ public class PlaywrightConfigLoader {
      * LazyConfigLoader for lazy, thread-safe singleton initialization.
      */
     private static class LazyConfigLoader {
-        private static final PlaywrightConfigLoader INSTANCE = new PlaywrightConfigLoader();
+        private static final PlaywrightConfigProvider INSTANCE = new PlaywrightConfigProvider();
     }
 }
