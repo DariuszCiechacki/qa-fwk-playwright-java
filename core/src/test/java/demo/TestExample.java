@@ -22,7 +22,23 @@ public class TestExample {
     }
 
     @Test
-    void testExample() {
+    void testExample1() {
+        Page page = PlaywrightSessionManager.current().getPage();
+        page.navigate("https://google.pl");
+        System.out.println("Page title: " + page.title());
+        Assertions.assertTrue(page.title().contains("Google"));
+    }
+
+    @Test
+    void testExample2() {
+        Page page = PlaywrightSessionManager.current().getPage();
+        page.navigate("https://google.pl");
+        System.out.println("Page title: " + page.title());
+        Assertions.assertTrue(page.title().contains("Google"));
+    }
+
+    @Test
+    void testExample3() {
         Page page = PlaywrightSessionManager.current().getPage();
         page.navigate("https://google.pl");
         System.out.println("Page title: " + page.title());
