@@ -9,7 +9,7 @@
     <artifactId>parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-    <name>QA Framework - Playwright Java</name>
+    <name>parent</name>
     <description>Modular Maven framework for test automation in Playwright with Java</description>
     <url>https://github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
 
