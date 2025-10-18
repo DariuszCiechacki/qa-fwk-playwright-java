@@ -9,11 +9,9 @@ import io.github.qa.playwright.config.context.ContextConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Factory responsible for creating new isolated {@link BrowserContext} instances.
- * <p>
- * Each test gets its own context, created from the global shared {@link Browser}.
- * Contexts are independent, allowing full isolation between parallel tests.
- * </p>
+ * Factory responsible for creating isolated {@link BrowserContext} instances.
+ * Each test gets its own independent context created from the
+ * Browser managed by {@link BrowserFactory}.
  */
 @Slf4j
 public final class BrowserContextFactory {
@@ -21,37 +19,37 @@ public final class BrowserContextFactory {
     private BrowserContextFactory() {
     }
 
+    /**
+     * Creates a new, fully configured {@link BrowserContext}.
+     *
+     * @return new BrowserContext ready for use.
+     * @throws ContextInitializationException if context creation fails.
+     */
     public static BrowserContext createContext() {
         try {
-            Browser browser = BrowserFactory.getBrowser();
+            // Ensure Browser is initialized
+            Browser browser = BrowserFactory.getCurrentInstance();
+            // Load context configuration
             ContextConfig config = PlaywrightConfigProvider.get().getConfig().getContextConfig();
 
+            // Configure context options based on loaded configuration
             Browser.NewContextOptions options = new Browser.NewContextOptions()
                     .setIgnoreHTTPSErrors(config.isIgnoreHTTPSErrors())
                     .setLocale(config.getLocale());
 
+            // Set viewport size if specified. Playwright provides a default 1280×720 if not set.
             if (config.getViewport() != null) {
-                options.setViewportSize(config.getViewport().getWidth(), config.getViewport().getHeight());
+                options.setViewportSize(
+                        config.getViewport().getWidth(),
+                        config.getViewport().getHeight()
+                );
             }
 
             BrowserContext context = browser.newContext(options);
-            log.info("[{}] BrowserContext created (locale={}, ignoreHTTPSErrors={})",
-                    Thread.currentThread().getName(), config.getLocale(), config.isIgnoreHTTPSErrors());
-
+            log.info("[{}] Playwright BrowserContext created.)", Thread.currentThread().getName());
             return context;
         } catch (Exception e) {
             throw new ContextInitializationException(e);
-        }
-    }
-
-    public static void closeContext(BrowserContext context) {
-        if (context != null) {
-            try {
-                context.close();
-                log.info("[{}] BrowserContext closed.", Thread.currentThread().getName());
-            } catch (Exception e) {
-                log.warn("[{}] Failed to close BrowserContext cleanly: {}", Thread.currentThread().getName(), e.getMessage());
-            }
         }
     }
 }

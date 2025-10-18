@@ -1,7 +1,5 @@
 package io.github.qa.junit;
 
-import io.github.qa.playwright.PlaywrightManager;
-import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.session.PlaywrightSessionManager;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -22,8 +20,6 @@ public class PlaywrightExtension implements BeforeEachCallback, AfterEachCallbac
 
     @Override
     public void afterAll(ExtensionContext context) {
-        PlaywrightSessionManager.sessionTeardown();
-        BrowserFactory.closeBrowser();
-        PlaywrightManager.close();
+        PlaywrightSessionManager.cleanUp();
     }
 }

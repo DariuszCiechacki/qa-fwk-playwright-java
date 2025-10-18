@@ -2,87 +2,94 @@ package io.github.qa.playwright.session;
 
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Page;
+import io.github.qa.exception.SessionCleanUpException;
+import io.github.qa.exception.SessionCloseException;
+import io.github.qa.playwright.PlaywrightManager;
+import io.github.qa.playwright.browser.BrowserFactory;
 import io.github.qa.playwright.context.BrowserContextFactory;
 import io.github.qa.playwright.page.PageFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Central orchestrator managing the lifecycle of Playwright components
+ * for a single test thread.
+ * <p>
+ * Each test thread maintains its own Browser instance (via {@link BrowserFactory}),
+ * and each test within that thread creates an isolated {@link BrowserContext} and {@link Page}.
+ * </p>
+ */
 @Slf4j
 public final class PlaywrightSessionManager {
+
     private static final ThreadLocal<PlaywrightSessionManager> THREAD_SESSION =
             ThreadLocal.withInitial(PlaywrightSessionManager::new);
 
+    @Getter
     private BrowserContext context;
+    @Getter
     private Page page;
 
     private PlaywrightSessionManager() {
-        // Prevent external construction
     }
 
     /**
-     * Initializes a fresh BrowserContext and Page for the current test.
-     * A single Browser is reused per thread, as managed by {@link io.github.qa.playwright.browser.BrowserFactory}.
+     * Initializes Playwright stack for the current test:
+     * <ul>
+     *   <li>Initializes Playwright (per thread)</li>
+     *   <li>Creates Browser (per thread)</li>
+     *   <li>Creates new Context and Page (per test)</li>
+     * </ul>
      */
     public static void startPlaywrightSession() {
         PlaywrightSessionManager session = THREAD_SESSION.get();
-        session.initializePlaywrightSessionStack();
+        session.initializeStack();
         log.info("[{}] Playwright session started.", Thread.currentThread().getName());
     }
 
     /**
-     * Returns the current thread's {@link PlaywrightSessionManager} instance.
+     * Returns the current thread's PlaywrightSessionManager instance.
      */
     public static PlaywrightSessionManager getCurrentSession() {
         return THREAD_SESSION.get();
     }
 
     /**
-     * Final teardown — closes the Browser (per thread) after all tests in this thread/class are done.
+     * Performs final cleanup after all tests:
+     * closes Browser and Playwright for this thread.
      */
-    public static void sessionTeardown() {
-        THREAD_SESSION.remove();
+    public static void cleanUp() {
+        try {
+            BrowserFactory.close();
+            PlaywrightManager.close();
+            THREAD_SESSION.remove();
+            log.info("[{}] Playwright session cleaned up.", Thread.currentThread().getName());
+        } catch (Exception e) {
+            throw new SessionCleanUpException(e);
+        }
     }
 
-    private void initializePlaywrightSessionStack() {
+    private void initializeStack() {
+        PlaywrightManager.initialize();
+        BrowserFactory.initialize();
         this.context = BrowserContextFactory.createContext();
         this.page = PageFactory.createPage(this.context);
     }
 
     /**
-     * Returns the current {@link BrowserContext}.
-     *
-     * @throws IllegalStateException if the context has not been initialized.
-     */
-    public BrowserContext getCurrentSessionContext() {
-        ensureInitialized(this.context, "BrowserContext not initialized. Call startPlaywrightSession() first.");
-        return this.context;
-    }
-
-    /**
-     * Returns the current {@link Page}.
-     *
-     * @throws IllegalStateException if the page has not been initialized.
-     */
-    public Page getCurrentSessionPage() {
-        ensureInitialized(this.page, "Page not initialized. Call startPlaywrightSession() first.");
-        return this.page;
-    }
-
-    /**
-     * Closes the current BrowserContext (and all its Pages).
-     * Should be called after each test.
+     * Closes BrowserContext (and its Pages) after each test.
      */
     public void closeSession() {
-        if (this.context != null) {
-            BrowserContextFactory.closeContext(this.context);
-            this.context = null;
-            this.page = null;
-            log.info("[{}] Playwright session context closed.", Thread.currentThread().getName());
-        }
-    }
-
-    private void ensureInitialized(Object obj, String message) {
-        if (obj == null) {
-            throw new IllegalStateException(message);
+        if (context != null) {
+            try {
+                context.close();
+                log.info("[{}] BrowserContext closed.", Thread.currentThread().getName());
+            } catch (Exception e) {
+                throw new SessionCloseException(e);
+            } finally {
+                context = null;
+                page = null;
+            }
         }
     }
 }
