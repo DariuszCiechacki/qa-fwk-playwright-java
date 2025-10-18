@@ -1,0 +1,31 @@
+name: Publish package
+
+on:
+  push:
+    branches: [ build/adds-publishing-to-gh-workflow ] # change to main branch
+jobs:
+  deploy:
+    name: Build & Deploy Maven Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: Build and deploy to GitHub Packages
+        run: mvn clean deploy -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Confirm deployment
+        run: echo "✅ Framework successfully deployed to GitHub Packages."

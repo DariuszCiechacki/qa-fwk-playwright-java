@@ -82,7 +82,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version> <!-- match your SLF4J API version -->
+                <version>${slf4j.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
