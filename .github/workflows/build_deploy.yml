@@ -5,7 +5,7 @@ on:
     branches: [ build/adds-publishing-to-gh-workflow ] # change to main
 
 jobs:
-  deploy:
+  build:
     name: Build & Deploy Maven Package
     runs-on: ubuntu-latest
     permissions:
@@ -20,15 +20,11 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          server-id: github
-          settings-path: ${{ github.workspace }}
-          server-username: GITHUB_ACTOR
-          server-password: GITHUB_TOKEN
 
-      - name: Build and deploy to GitHub Packages
-        run: mvn --batch-mode clean deploy -DskipTests
+      - name: Build & Deploy
+        run: mvn -B clean deploy -DskipTests
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Confirm deployment
         run: echo "✅ Framework successfully deployed to GitHub Packages."
