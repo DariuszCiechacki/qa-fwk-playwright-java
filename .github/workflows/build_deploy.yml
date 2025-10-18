@@ -2,7 +2,8 @@ name: Publish package
 
 on:
   push:
-    branches: [ build/adds-publishing-to-gh-workflow ] # change to main branch
+    branches: [ main ]  # or your feature branch for now
+
 jobs:
   deploy:
     name: Build & Deploy Maven Package
@@ -10,6 +11,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,7 +27,7 @@ jobs:
           server-password: GITHUB_TOKEN
 
       - name: Build and deploy to GitHub Packages
-        run: mvn clean deploy -DskipTests
+        run: mvn --batch-mode clean deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
