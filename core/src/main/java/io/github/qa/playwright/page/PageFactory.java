@@ -8,8 +8,7 @@ import io.github.qa.playwright.config.page.PageConfig;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Factory responsible for creating and configuring new {@link Page} instances.
- * Each page is created within its own {@link BrowserContext}, applying timeout settings from {@link PageConfig}.
+ * Factory responsible for creating new {@link Page} instances within a given {@link BrowserContext}.
  */
 @Slf4j
 public final class PageFactory {
@@ -18,13 +17,17 @@ public final class PageFactory {
     }
 
     /**
-     * Creates a new {@link com.microsoft.playwright.Page} with all default configuration applied.
+     * Creates a new {@link Page} with all configuration applied.
      *
      * @return fully initialized Playwright Page.
      * @throws PageInitializationException if page creation fails.
      */
     public static Page createPage(BrowserContext context) {
         try {
+            if (context == null) {
+                throw new IllegalArgumentException("BrowserContext must not be null when creating a Page.");
+            }
+
             // Load page configuration
             PageConfig pageConfig = PlaywrightConfigProvider.get().getConfig().getPageConfig();
 
@@ -40,7 +43,7 @@ public final class PageFactory {
                 }
             }
 
-            log.info("Created new Playwright Page.");
+            log.info("[{}] Playwright Page created.", Thread.currentThread().getName());
             return page;
 
         } catch (Exception e) {

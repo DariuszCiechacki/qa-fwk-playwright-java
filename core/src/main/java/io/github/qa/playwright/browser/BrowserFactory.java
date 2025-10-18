@@ -17,8 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
 
 /**
- * Factory responsible for creating and managing a single {@link Browser} instance.
- * Uses browser-type resolvers to obtain the correct {@link BrowserType}, then applies launch options defined in the configuration.
+ * Factory responsible for creating {@link Browser} instances.
+ * Each test thread holds its own Browser instance, created once per thread.
+ * The Browser is launched from the {@link Playwright} instance managed by {@link PlaywrightManager}.
  */
 @Slf4j
 public final class BrowserFactory {
@@ -28,60 +29,103 @@ public final class BrowserFactory {
             BrowserTypeName.FIREFOX.getValue(), new FirefoxResolver(),
             BrowserTypeName.WEBKIT.getValue(), new WebkitResolver()
     );
+
     private static final Map<String, ChromiumChannelResolver> CHANNEL_RESOLVERS = Map.of(
             ChromiumChannelName.CHROME.getValue(), new ChromeChannelResolver(),
             ChromiumChannelName.MSEDGE.getValue(), new EdgeChannelResolver()
     );
 
-    private static Browser browserInstance;
+    /**
+     * One Browser instance per test thread.
+     */
+    private static final ThreadLocal<Browser> THREAD_BROWSER = new ThreadLocal<>();
 
     private BrowserFactory() {
     }
 
     /**
-     * Returns a singleton {@link Browser} instance created according to configuration.
-     *
-     * @return active Playwright {@link Browser}.
-     * @throws BrowserInitializationException if browser creation fails.
+     * Returns the Browser for the current thread, creating it if missing.
      */
-    public static synchronized Browser getBrowser() {
-        if (browserInstance == null) {
-            try {
-                // Ensure Playwright is initialized
-                Playwright playwright = PlaywrightManager.getInstance();
-                // Load browser configuration
-                BrowserConfig browserConfig = PlaywrightConfigProvider.get().getConfig().getBrowserConfig();
+    public static synchronized void initialize() {
+        if (THREAD_BROWSER.get() == null) {
+            Browser browser = createBrowser();
+            THREAD_BROWSER.set(browser);
+            log.info("[{}] Browser instance initialized.", Thread.currentThread().getName());
+        } else {
+            log.debug("[{}] Browser already initialized; skipping.", Thread.currentThread().getName());
+        }
+    }
 
-                // Resolve the appropriate BrowserType
-                String type = BrowserTypeName.getByName(browserConfig.getType());
-                BrowserType browserType = BROWSER_TYPE_RESOLVERS.get(type).resolve(playwright);
-                log.info("Creating browser of type: {}", type);
+    /**
+     * Creates a new Browser instance based on the configuration.
+     */
+    private static Browser createBrowser() {
+        try {
+            // Ensure Playwright is initialized
+            Playwright playwright = PlaywrightManager.getCurrentInstance();
 
-                // Set up browser launch options
-                BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
-                        .setHeadless(browserConfig.isHeadless())
-                        .setSlowMo(browserConfig.getSlowMo());
+            // Load browser configuration
+            BrowserConfig browserConfig = PlaywrightConfigProvider.get().getConfig().getBrowserConfig();
 
-                // Apply channel only for Chromium-based browsers
-                if (BrowserTypeName.CHROMIUM.getValue().equals(type)) {
-                    if (browserConfig.getChannel() == null || browserConfig.getChannel().isBlank()) {
-                        log.info("No browser channel specified; using default for type: {}", type);
-                    } else {
-                        String channel = ChromiumChannelName.getByName(browserConfig.getChannel());
-                        ChromiumChannelResolver channelResolver = CHANNEL_RESOLVERS.get(channel);
-                        channelResolver.applyChannel(options);
-                        log.info("Using Chromium channel: {}", channel);
-                    }
+            // Resolve the appropriate BrowserType
+            String type = BrowserTypeName.getByName(browserConfig.getType());
+            BrowserType browserType = BROWSER_TYPE_RESOLVERS.get(type).resolve(playwright);
+            log.info("Creating browser of type: {}.", type);
+
+            // Set up browser launch options
+            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions()
+                    .setHeadless(browserConfig.isHeadless())
+                    .setSlowMo(browserConfig.getSlowMo());
+
+            // Apply channel only for Chromium-based browsers
+            if (BrowserTypeName.CHROMIUM.getValue().equals(type)) {
+                if (browserConfig.getChannel() == null || browserConfig.getChannel().isBlank()) {
+                    log.info("No browser channel specified; using default for type: {}.", type);
+                } else {
+                    String channel = ChromiumChannelName.getByName(browserConfig.getChannel());
+                    ChromiumChannelResolver channelResolver = CHANNEL_RESOLVERS.get(channel);
+                    channelResolver.applyChannel(options);
+                    log.info("Using Chromium channel: {}.", channel);
                 }
-                browserInstance = browserType.launch(options);
+            }
+
+            Browser browser = browserType.launch(options);
+            log.info("[{}] Playwright Browser created.)", Thread.currentThread().getName());
+            return browser;
+        } catch (Exception e) {
+            throw new BrowserInitializationException(e);
+        }
+    }
+
+    /**
+     * Returns the current {@link Browser} instance for this thread.
+     *
+     * @throws IllegalStateException if Browser has not been initialized.
+     */
+    public static Browser getCurrentInstance() {
+        Browser browser = THREAD_BROWSER.get();
+        if (browser == null) {
+            throw new IllegalStateException(
+                    "Browser instance not initialized. Call BrowserFactory.initialize() first.");
+        }
+        return browser;
+    }
+
+    /**
+     * Closes and removes the Browser instance for the current thread, if active.
+     */
+    public static synchronized void close() {
+        Browser browser = THREAD_BROWSER.get();
+        if (browser != null) {
+            try {
+                browser.close();
+                log.info("[{}] Browser instance closed successfully.", Thread.currentThread().getName());
             } catch (Exception e) {
-                throw new BrowserInitializationException(e);
+                log.warn("[{}] Failed to close Browser cleanly: {}", Thread.currentThread().getName(), e.getMessage());
+            } finally {
+                THREAD_BROWSER.remove();
             }
         }
-        return browserInstance;
-    }
-
-    public static synchronized void reset() {
-        browserInstance = null;
     }
 }
+

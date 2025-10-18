@@ -1,58 +1,63 @@
 package io.github.qa.playwright;
 
 import com.microsoft.playwright.Playwright;
-import io.github.qa.exception.PlaywrightInitializationException;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Manages lifecycle of a single {@link Playwright} instance.
- * Ensures that Playwright is created once and closed safely at the end of execution.
- * Intended to be used by factories such as {@link io.github.qa.playwright.browser.BrowserFactory},
- * {@link io.github.qa.playwright.context.BrowserContextFactory} and {@link io.github.qa.playwright.page.PageFactory}.
+ * Controls lifecycle of {@link Playwright}.
+ * Each test thread maintains its own Playwright instance and closed safely after all tests.
  */
 @Slf4j
 public final class PlaywrightManager {
 
-    /**
-     * Singleton Playwright instance.
-     */
-    private static Playwright playwrightInstance;
+    private static final ThreadLocal<Playwright> THREAD_PLAYWRIGHT = new ThreadLocal<>();
 
     private PlaywrightManager() {
-        // Utility class; prevent instantiation.
     }
 
     /**
-     * Returns the active {@link Playwright} instance, creating it if necessary.
-     *
-     * @return singleton Playwright instance.
-     * @throws PlaywrightInitializationException if initialization fails.
+     * Explicitly initializes {@link Playwright} for the current thread, if not already initialized.
      */
-    public static synchronized Playwright getInstance() {
-        if (playwrightInstance == null) {
-            try {
-                playwrightInstance = Playwright.create();
-                log.info("Playwright initialized successfully.");
-            } catch (Exception e) {
-                throw new PlaywrightInitializationException(e);
-            }
+    public static synchronized void initialize() {
+        if (THREAD_PLAYWRIGHT.get() == null) {
+            Playwright playwright = Playwright.create();
+            THREAD_PLAYWRIGHT.set(playwright);
+            log.info("[{}] Playwright instance initialized.", Thread.currentThread().getName());
+        } else {
+            log.debug("[{}] Playwright already initialized; skipping.", Thread.currentThread().getName());
         }
-        return playwrightInstance;
     }
 
     /**
-     * Closes the current Playwright instance safely, if active.
+     * Returns the current {@link Playwright} instance for this thread.
+     *
+     * @throws IllegalStateException if Playwright has not been initialized.
+     */
+    public static Playwright getCurrentInstance() {
+        Playwright playwright = THREAD_PLAYWRIGHT.get();
+        if (playwright == null) {
+            throw new IllegalStateException(
+                    "Playwright instance not initialized. Call PlaywrightManager.initialize() first.");
+        }
+        return playwright;
+    }
+
+    /**
+     * Closes and removes the Playwright instance for the current thread, if active.
      */
     public static synchronized void close() {
-        if (playwrightInstance != null) {
+        Playwright playwright = THREAD_PLAYWRIGHT.get();
+        if (playwright != null) {
             try {
-                playwrightInstance.close();
-                log.info("Playwright instance closed successfully.");
+                playwright.close();
+                log.info("[{}] Playwright instance closed successfully.", Thread.currentThread().getName());
             } catch (Exception e) {
-                log.warn("Failed to close Playwright cleanly: {}", e.getMessage(), e);
+                log.warn("[{}] Failed to close Playwright cleanly: {}", Thread.currentThread().getName(), e.getMessage());
             } finally {
-                playwrightInstance = null;
+                THREAD_PLAYWRIGHT.remove();
             }
         }
     }
 }
+
+
