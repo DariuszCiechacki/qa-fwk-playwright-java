@@ -190,7 +190,7 @@
         <repository>
             <id>github</id>
             <name>GitHub DariuszCiechacki Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
+            <url>https://maven.pkg.github.com/dariuszciechacki/qa-fwk-playwright-java</url>
         </repository>
     </distributionManagement>
 </project>

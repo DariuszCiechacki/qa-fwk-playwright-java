@@ -5,8 +5,7 @@ on:
     branches: [ build/adds-publishing-to-gh-workflow ] # change to main
 
 jobs:
-  build:
-    name: Build & Deploy Maven Package
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -15,21 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      # This step generates ~/.m2/settings.xml with server id 'github'
+      # and wires username=${GITHUB_ACTOR}, password=${GITHUB_TOKEN}.
+      - uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'temurin'
-          server-id: github
-          server-username: GITHUB_ACTOR
-          server-password: GH_TOKEN
-          settings-path: ${{ github.workspace }}
+          java-version: '21'
 
-      - name: Build & Deploy
+      - name: Deploy to GitHub Packages
         run: mvn -B clean deploy -DskipTests
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.actor }}
-
-      - name: Confirm deployment
-        run: echo "✅ Framework successfully deployed to GitHub Packages."
+          # <-- IMPORTANT: use GITHUB_TOKEN, not GH_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

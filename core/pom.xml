@@ -14,7 +14,7 @@
 
     <!-- MODULE METADATA -->
     <artifactId>core</artifactId>
-    <name>QA Framework - Core</name>
+    <name>core</name>
     <description>Core Playwright module with configuration, drivers, and test base</description>
 
     <!-- DEPENDENCIES -->
