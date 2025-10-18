@@ -9,7 +9,7 @@
     <artifactId>parent</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-    <name>QA Framework - Playwright Java</name>
+    <name>parent</name>
     <description>Modular Maven framework for test automation in Playwright with Java</description>
     <url>https://github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
 
@@ -82,7 +82,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version> <!-- match your SLF4J API version -->
+                <version>${slf4j.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
@@ -190,7 +190,7 @@
         <repository>
             <id>github</id>
             <name>GitHub DariuszCiechacki Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
+            <url>https://maven.pkg.github.com/dariuszciechacki/qa-fwk-playwright-java</url>
         </repository>
     </distributionManagement>
 </project>
