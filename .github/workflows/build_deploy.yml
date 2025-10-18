@@ -2,7 +2,7 @@ name: Publish package
 
 on:
   push:
-    branches: [ build/adds-publishing-to-gh-workflow ] # change to main
+    branches: [ main ]
 
 jobs:
   publish:
