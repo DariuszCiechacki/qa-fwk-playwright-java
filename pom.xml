@@ -36,6 +36,7 @@
         <slf4j.version>2.0.13</slf4j.version>
         <maven.dependency.checkstyle.version>3.3.1</maven.dependency.checkstyle.version>
         <fasterxml.version>2.17.0</fasterxml.version>
+        <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
     </properties>
 
     <!-- DEPENDENCY MANAGEMENT -->
@@ -94,74 +95,56 @@
     </dependencyManagement>
 
     <build>
-        <!-- PLUGIN MANAGEMENT -->
+        <plugins>
+            <!-- Dependency -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+            </plugin>
+
+            <!-- Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+
+            <!-- Flatten maven -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
         <pluginManagement>
             <plugins>
-
-                <!-- Compiler -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
-                    <configuration>
-                        <release>${java.version}</release>
-                    </configuration>
-                </plugin>
-
-                <!-- Surefire -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
-                    <configuration>
-                        <useModulePath>false</useModulePath>
-                    </configuration>
-                </plugin>
-
-                <!-- Checkstyle -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>${maven.dependency.checkstyle.version}</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>10.15.0</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <configLocation>etc/checkstyle.xml</configLocation>
-                        <consoleOutput>true</consoleOutput>
-                        <failOnViolation>true</failOnViolation>
-                        <failsOnError>true</failsOnError>
-                        <violationSeverity>warning</violationSeverity>
-                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <includeResources>true</includeResources>
-                        <includeTestResources>true</includeTestResources>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>validate</id>
-                            <phase>validate</phase>
-                            <goals>
-                                <goal>check</goal>
-                                <goal>checkstyle-aggregate</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <!-- Flatten maven -->
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>flatten-maven-plugin</artifactId>
-                    <version>1.5.0</version>
+                    <version>${maven.flatten.plugin.version}</version>
                     <configuration>
-                        <!-- Replace ${properties} and remove parent -->
-                        <updatePomFile>true</updatePomFile>
-                        <!-- Keeps versions and dependencyManagement intact for CI friendliness -->
-                        <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                        <flattenMode>bom</flattenMode>
+                        <pomElements>
+                            <profiles>keep</profiles>
+                            <pluginManagement>keep</pluginManagement>
+                            <build>keep</build>
+                            <repositories>keep</repositories>
+                            <pluginRepositories>keep</pluginRepositories>
+                            <distributionManagement>keep</distributionManagement>
+                        </pomElements>
                     </configuration>
                     <executions>
                         <execution>
@@ -180,7 +163,6 @@
                         </execution>
                     </executions>
                 </plugin>
-
             </plugins>
         </pluginManagement>
     </build>
