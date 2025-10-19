@@ -83,7 +83,6 @@ public final class PlaywrightSessionManager {
         if (context != null) {
             try {
                 context.close();
-                log.info("[{}] BrowserContext closed.", Thread.currentThread().getName());
             } catch (Exception e) {
                 throw new SessionCloseException(e);
             } finally {

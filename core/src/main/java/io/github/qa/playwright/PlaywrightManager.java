@@ -50,7 +50,6 @@ public final class PlaywrightManager {
         if (playwright != null) {
             try {
                 playwright.close();
-                log.info("[{}] Playwright instance closed successfully.", Thread.currentThread().getName());
             } catch (Exception e) {
                 log.warn("[{}] Failed to close Playwright cleanly: {}", Thread.currentThread().getName(), e.getMessage());
             } finally {

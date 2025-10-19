@@ -45,9 +45,7 @@ public final class BrowserContextFactory {
                 );
             }
 
-            BrowserContext context = browser.newContext(options);
-            log.info("[{}] Playwright BrowserContext created.)", Thread.currentThread().getName());
-            return context;
+            return browser.newContext(options);
         } catch (Exception e) {
             throw new ContextInitializationException(e);
         }

@@ -42,8 +42,6 @@ public final class PageFactory {
                     page.setDefaultNavigationTimeout(pageConfig.getNavigationTimeout());
                 }
             }
-
-            log.info("[{}] Playwright Page created.", Thread.currentThread().getName());
             return page;
 
         } catch (Exception e) {

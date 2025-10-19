@@ -50,7 +50,6 @@ public final class BrowserFactory {
         if (THREAD_BROWSER.get() == null) {
             Browser browser = createBrowser();
             THREAD_BROWSER.set(browser);
-            log.info("[{}] Browser instance initialized.", Thread.currentThread().getName());
         } else {
             log.debug("[{}] Browser already initialized; skipping.", Thread.currentThread().getName());
         }
@@ -89,9 +88,7 @@ public final class BrowserFactory {
                 }
             }
 
-            Browser browser = browserType.launch(options);
-            log.info("[{}] Playwright Browser created.)", Thread.currentThread().getName());
-            return browser;
+            return browserType.launch(options);
         } catch (Exception e) {
             throw new BrowserInitializationException(e);
         }
@@ -119,7 +116,6 @@ public final class BrowserFactory {
         if (browser != null) {
             try {
                 browser.close();
-                log.info("[{}] Browser instance closed successfully.", Thread.currentThread().getName());
             } catch (Exception e) {
                 log.warn("[{}] Failed to close Browser cleanly: {}", Thread.currentThread().getName(), e.getMessage());
             } finally {
