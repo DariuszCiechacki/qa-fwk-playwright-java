@@ -17,6 +17,7 @@
     <modules>
         <module>test-parent</module>
         <module>core</module>
+        <module>report</module>
     </modules>
 
     <!-- PROPERTIES -->
