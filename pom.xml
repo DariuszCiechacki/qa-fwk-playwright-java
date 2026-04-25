@@ -34,7 +34,7 @@
         <playwright.version>1.55.0</playwright.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <allure.version>2.27.0</allure.version>
-        <lombok.version>1.18.32</lombok.version>
+        <lombok.version>1.18.44</lombok.version>
         <slf4j.version>2.0.13</slf4j.version>
         <maven.dependency.checkstyle.version>3.3.1</maven.dependency.checkstyle.version>
         <fasterxml.version>2.17.0</fasterxml.version>
@@ -76,6 +76,7 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>${lombok.version}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -111,7 +112,15 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.1</version>
                 <configuration>
+                    <proc>full</proc>
                     <release>${java.version}</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
