@@ -10,13 +10,14 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <name>parent</name>
-    <description>Modular Maven framework for test automation in Playwright with Java</description>
+    <description>Modular Maven framework for Java test automation across multiple test types</description>
     <url>https://github.com/DariuszCiechacki/qa-fwk-playwright-java</url>
 
     <!-- MODULES -->
     <modules>
         <module>test-parent</module>
         <module>core</module>
+        <module>ui-playwright</module>
         <module>report</module>
     </modules>
 

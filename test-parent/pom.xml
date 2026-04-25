@@ -16,7 +16,7 @@
     <artifactId>test-parent</artifactId>
     <packaging>pom</packaging>
     <name>test-parent</name>
-    <description>Parent POM for Playwright-based test projects</description>
+    <description>Parent POM for test projects</description>
 
     <!-- DEPENDENCY INHERITANCE -->
     <dependencies>

@@ -1,10 +1,7 @@
-# QA Framework – Playwright Java
+# QA Framework – Java
 
-Modular maven testing framework built with: 
-**Playwright**
-**JAVA**
-**Allure Reports**
-created as part of the Dariusz Ciechacki portfolio.
+Modular Maven test automation framework built for multiple test types.
+The current UI module is based on Playwright, with the shared `core` module reserved for cross-cutting capabilities that can be reused by UI, API, integration, and component testing.
 
 ## Tech Stack
 - **Java:** 25
