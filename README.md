@@ -9,3 +9,14 @@ The current UI module is based on Playwright, with the shared `core` module rese
 - **Maven**
 - **GitHub Actions / GitHub Packages**
 - **Allure Reports**
+
+## Failure Screenshots
+
+Enable automatic screenshot capture for failed UI tests in `playwright-config.yml`:
+
+```yaml
+debuggingConfig:
+  screenshotsOnFailure: true
+```
+
+When enabled, the framework stores screenshots under `target/screenshots/failures`.
