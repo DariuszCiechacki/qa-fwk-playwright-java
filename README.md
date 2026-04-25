@@ -7,7 +7,7 @@ Modular maven testing framework built with:
 created as part of the Dariusz Ciechacki portfolio.
 
 ## Tech Stack
-- **Java:** 21
+- **Java:** 25
 - **Playwright:** 1.55.0
 - **Maven**
 - **GitHub Actions / GitHub Packages**
