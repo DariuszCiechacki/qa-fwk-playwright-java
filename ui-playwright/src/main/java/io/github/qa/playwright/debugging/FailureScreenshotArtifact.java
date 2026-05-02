@@ -41,6 +41,7 @@ final class FailureScreenshotArtifact {
 
         if (capture(page, screenshotPath.get())) {
             context.getStore(NAMESPACE).put(SCREENSHOT_CAPTURED_KEY, true);
+            AllureAttachmentSupport.attachFailureScreenshot(screenshotPath.get());
         }
     }
 
