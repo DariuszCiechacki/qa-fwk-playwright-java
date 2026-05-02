@@ -8,7 +8,7 @@
     <parent>
         <groupId>io.github.dariuszciechacki</groupId>
         <artifactId>parent</artifactId>
-        <version>${revision}</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,9 +16,13 @@
     <artifactId>test-parent</artifactId>
     <packaging>pom</packaging>
     <name>test-parent</name>
-    <description>Parent POM for test projects</description>
+    <description>Parent POM for executable test projects using the QA framework</description>
 
-    <!-- DEPENDENCY INHERITANCE -->
+    <properties>
+        <argLine></argLine>
+    </properties>
+
+    <!-- DEPENDENCIES -->
     <dependencies>
         <!-- JUnit 5 -->
         <dependency>
@@ -28,8 +32,38 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
         </dependency>
 
+        <!-- Allure -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Surefire -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>@{argLine} -javaagent:${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar</argLine>
+                    <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+
+            <!-- Allure report generation -->
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -15,10 +15,10 @@
 
     <!-- MODULES -->
     <modules>
-        <module>test-parent</module>
         <module>core</module>
         <module>ui-playwright</module>
         <module>report</module>
+        <module>test-parent</module>
     </modules>
 
     <!-- PROPERTIES -->
@@ -34,9 +34,10 @@
         <playwright.version>1.55.0</playwright.version>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <allure.version>2.27.0</allure.version>
+        <aspectj.version>1.9.25</aspectj.version>
         <lombok.version>1.18.44</lombok.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <maven.dependency.checkstyle.version>3.3.1</maven.dependency.checkstyle.version>
+        <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
         <fasterxml.version>2.17.0</fasterxml.version>
         <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
     </properties>
@@ -70,6 +71,11 @@
                 <artifactId>allure-junit5</artifactId>
                 <version>${allure.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
 
             <!-- Utils dependencies-->
             <dependency>
@@ -84,12 +90,6 @@
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-simple</artifactId>
-                <version>${slf4j.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${fasterxml.version}</version>
@@ -99,13 +99,6 @@
 
     <build>
         <plugins>
-            <!-- Dependency -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.6.1</version>
-            </plugin>
-
             <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -128,7 +121,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <useModulePath>false</useModulePath>
                 </configuration>
@@ -152,15 +145,7 @@
                     <artifactId>flatten-maven-plugin</artifactId>
                     <version>${maven.flatten.plugin.version}</version>
                     <configuration>
-                        <flattenMode>bom</flattenMode>
-                        <pomElements>
-                            <profiles>keep</profiles>
-                            <pluginManagement>keep</pluginManagement>
-                            <build>keep</build>
-                            <repositories>keep</repositories>
-                            <pluginRepositories>keep</pluginRepositories>
-                            <distributionManagement>keep</distributionManagement>
-                        </pomElements>
+                        <flattenMode>resolveCiFriendliesOnly</flattenMode>
                     </configuration>
                     <executions>
                         <execution>
