@@ -18,6 +18,7 @@
         <module>core</module>
         <module>ui-playwright</module>
         <module>report</module>
+        <module>test-parent</module>
     </modules>
 
     <!-- PROPERTIES -->
