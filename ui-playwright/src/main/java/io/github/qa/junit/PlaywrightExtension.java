@@ -1,5 +1,6 @@
 package io.github.qa.junit;
 
+import io.github.qa.playwright.config.debugging.DebuggingConfigResolver;
 import io.github.qa.playwright.debugging.DebuggingManager;
 import io.github.qa.playwright.session.PlaywrightSessionManager;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -18,6 +19,14 @@ public class PlaywrightExtension
 
     @Override
     public void afterTestExecution(ExtensionContext context) {
+        if (context.getExecutionException().isEmpty()) {
+            return;
+        }
+
+        if (!DebuggingConfigResolver.isScreenshotsOnFailureEnabled()) {
+            return;
+        }
+
         DebuggingManager.captureFailureArtifacts(context);
     }
 

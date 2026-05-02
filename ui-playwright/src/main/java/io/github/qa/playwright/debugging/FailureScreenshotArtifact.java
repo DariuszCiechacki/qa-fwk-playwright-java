@@ -22,7 +22,18 @@ final class FailureScreenshotArtifact {
     }
 
     public void capture(ExtensionContext context) {
-        Page page = PlaywrightSessionManager.getCurrentSession().getPage();
+        PlaywrightSessionManager session = PlaywrightSessionManager.getCurrentSession();
+        if (session == null) {
+            log.debug("No Playwright session available; skipping failure screenshot capture.");
+            return;
+        }
+
+        Page page = session.getPage();
+        if (page == null) {
+            log.debug("No Playwright page available; skipping failure screenshot capture.");
+            return;
+        }
+
         Optional<Path> screenshotPath = environment.prepareTargetPath(context);
         if (screenshotPath.isEmpty()) {
             return;
